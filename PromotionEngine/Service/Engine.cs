@@ -78,21 +78,55 @@ namespace PromotionEngine.Service
                     }
                 }
                 // If the iterated promotion has more than one Sku item
-                else if (promotion.PromotedSkus.Count > 1) 
+                else if (promotion.PromotedSkus.Count > 1)
                 {
                     // List down all the combinations of purchased Sku items
-                    List<string> combinedSkuIds = new List<string>();
+                    var combinedSkuIds = GetAllCombinations(purchasedSkuIds);
 
                     // Looping over all the combinations
-                    foreach (string skuCombo in combinedSkuIds) 
+                    foreach (string skuCombo in combinedSkuIds)
                     {
-                        // Looping over a list of promoted Sku items
+                        // Split current combination into an array
+                        var skuComboArray = skuCombo.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-                        // If purchased Sku item quantity is less than that of promotional sku item quantity
+                        // If number of Sku items in promotion is same as that length of array of combination
+                        if (promotion.PromotedSkus.Count == skuComboArray.Length)
+                        {
+                            // Extract only SkuIds from promotion
+                            var promotedSkuIds = promotion.PromotedSkus.Select(a => a.SkuId).ToArray();
 
-                        // If purchased Sku item quantity is same as that of promotional sku item quantity
+                            // If current combination of Sku items matches promotion Sku items
+                            bool areEqual = promotedSkuIds.SequenceEqual(skuComboArray);
+                            if (areEqual)
+                            {
+                                var promotedSkuList = promotion.PromotedSkus;
+                                var purchasedSkuList = cart.PurchasedSkus.Where(a => skuComboArray.Contains(a.SkuId));
+                                // Get correponding list of Sku item entries from mock database collection
+                                var skuRowList = SkuCollection.Where(a => skuComboArray.Contains(a.SkuId));
 
-                        // If purchased Sku item quantity is more than that of promotional sku item quantity
+                                // Maintains combination of related Sku items which are promoted
+                                List<string> skuList = new List<string>();
+
+                                // Looping over a list of promoted Sku items
+                                foreach (var promotedSku in promotedSkuList)
+                                {
+                                    // For current promoted Sku item extract purchased Sku item and Sku item from mock collection
+                                    var purchasedSku = cart.PurchasedSkus.FirstOrDefault(a => a.SkuId == promotedSku.SkuId);
+                                    var skuRow = SkuCollection.FirstOrDefault(a => a.SkuId == promotedSku.SkuId);
+
+                                    // If purchased Sku item quantity is less than that of promotional sku item quantity break the promotion 
+                                    if (purchasedSku.Quantity < promotedSku.Quantity)
+                                    {
+                                        
+                                    }
+                                    // If purchased Sku item quantity is more than or same as that of promotional sku item quantity directly apply offer
+                                    else
+                                    {
+                                        skuList.Add(purchasedSku.SkuId);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -130,6 +164,28 @@ namespace PromotionEngine.Service
 
             cart.CartTotal = PromotionAppliedWithPriceForSkus.Sum(a => a.Value);
             return cart;
+        }
+
+        private List<string> GetAllCombinations(List<string> inputList)
+        {
+            List<string> outputList = new List<string>();
+            string outstr = string.Empty;
+            double count = Math.Pow(2, inputList.Count);
+            for (int i = 1; i <= count - 1; i++)
+            {
+                string str = Convert.ToString(i, 2).PadLeft(inputList.Count, '0');
+                for (int j = 0; j < str.Length; j++)
+                {
+                    if (str[j] == '1')
+                    {
+                        outstr += inputList[j] + ",";
+                    }
+                }
+                outputList.Add(outstr);
+                outstr = string.Empty;
+            }
+
+            return outputList;
         }
     }
 }
