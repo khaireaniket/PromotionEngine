@@ -44,6 +44,8 @@ namespace PromotionEngine.Service
                                                                     .Any())
                                                         .ToList();
 
+            // List for holding purchased Sku items which are not applicable for promotion
+            List<PurchasedSku> remainingSkuList = new List<PurchasedSku>();
             Random rnd = new Random();
 
             // Looping over all the filterd promotions
@@ -81,12 +83,14 @@ namespace PromotionEngine.Service
                 else if (promotion.PromotedSkus.Count > 1)
                 {
                     // List down all the combinations of purchased Sku items
+                    // E.g. { 'A' , 'B' , 'C' , 'A,B' , 'B,C' , 'C,D' , 'A,B,C' }
                     var combinedSkuIds = GetAllCombinations(purchasedSkuIds);
 
                     // Looping over all the combinations
                     foreach (string skuCombo in combinedSkuIds)
                     {
                         // Split current combination into an array
+                        // E.g. ['C', 'D']
                         var skuComboArray = skuCombo.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
                         // If number of Sku items in promotion is same as that length of array of combination
@@ -104,6 +108,8 @@ namespace PromotionEngine.Service
                                 // Get correponding list of Sku item entries from mock database collection
                                 var skuRowList = SkuCollection.Where(a => skuComboArray.Contains(a.SkuId));
 
+                                bool isPromoApplicable = true;
+
                                 // Maintains combination of related Sku items which are promoted
                                 List<string> skuList = new List<string>();
 
@@ -117,22 +123,42 @@ namespace PromotionEngine.Service
                                     // If purchased Sku item quantity is less than that of promotional sku item quantity break the promotion 
                                     if (purchasedSku.Quantity < promotedSku.Quantity)
                                     {
-                                        
+                                        isPromoApplicable = false;
+                                        break;
                                     }
                                     // If purchased Sku item quantity is more than or same as that of promotional sku item quantity directly apply offer
                                     else
                                     {
+                                        // Check if promotion and list of Sku item already exists in Dictionary
+                                        if (PromotionAppliedWithPriceForSkus.Keys.Contains((promotion.PromotionId, skuList)))
+                                        {
+                                            // If exists remove the record to add updated record later
+                                            PromotionAppliedWithPriceForSkus.Remove((promotion.PromotionId, skuList));
+                                        }
+
                                         skuList.Add(purchasedSku.SkuId);
+                                        PromotionAppliedWithPriceForSkus.Add((promotion.PromotionId, skuList), promotion.Offer);
+
+                                        // If purchased Sku item quantity is more than that of promotional sku item quantity
+                                        if (purchasedSku.Quantity > promotedSku.Quantity)
+                                        {
+                                            // If Sku item is applied promotion, the remaining quantity will be applied base price
+                                            remainingSkuList.Add(new PurchasedSku { SkuId = purchasedSku.SkuId, Quantity = purchasedSku.Quantity - promotedSku.Quantity });
+                                        }
                                     }
+                                }
+
+                                // If even a single Sku item cannot satisfy promotion condition, pricing of all the Sku items which are part of combination will be recalculated
+                                if (!isPromoApplicable)
+                                {
+                                    // Undo promotion of dependent Sku items 
+                                    PromotionAppliedWithPriceForSkus.Remove((promotion.PromotionId, skuList));
                                 }
                             }
                         }
                     }
                 }
             }
-
-            // List for holding purchased Sku items which are not applicable for promotion
-            List<PurchasedSku> remainingSkuList = new List<PurchasedSku>();
 
             List<string> promotionAppliedSkus = new List<string>();
 
