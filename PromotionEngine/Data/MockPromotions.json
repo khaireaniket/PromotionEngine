@@ -1,0 +1,66 @@
+[
+  {
+    "PromotionId": 1,
+    "PromotionName": "Diwali",
+    "IsActive": true,
+    "OfferType": "Amount",
+    "Offer": 130,
+    "StartDate": "08/15/2020",
+    "EndDate": "09/15/2020",
+    "PromotedSkus": [
+      {
+        "SkuId": "A",
+        "Quantity": 3
+      }
+    ]
+  },
+  {
+    "PromotionId": 2,
+    "PromotionName": "Christmas",
+    "IsActive": true,
+    "OfferType": "Amount",
+    "Offer": 45,
+    "StartDate": "08/15/2020",
+    "EndDate": "09/15/2020",
+    "PromotedSkus": [
+      {
+        "SkuId": "B",
+        "Quantity": 2
+      }
+    ]
+  },
+  {
+    "PromotionId": 3,
+    "PromotionName": "New Year",
+    "IsActive": true,
+    "OfferType": "Amount",
+    "Offer": 30,
+    "StartDate": "08/15/2020",
+    "EndDate": "09/15/2020",
+    "PromotedSkus": [
+      {
+        "SkuId": "C",
+        "Quantity": 1
+      },
+      {
+        "SkuId": "D",
+        "Quantity": 1
+      }
+    ]
+  },
+  {
+    "PromotionId": 4,
+    "PromotionName": "End Of Sale",
+    "IsActive": true,
+    "OfferType": "Percent",
+    "Offer": 10,
+    "StartDate": "08/15/2020",
+    "EndDate": "09/15/2020",
+    "PromotedSkus": [
+      {
+        "SkuId": "E",
+        "Quantity": 1
+      }
+    ]
+  }
+]

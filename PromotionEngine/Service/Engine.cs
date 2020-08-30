@@ -1,4 +1,4 @@
-﻿namespace PromotionEngine
+﻿namespace PromotionEngine.Service
 {
     public class Engine
     {

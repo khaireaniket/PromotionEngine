@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace PromotionEngine.Tests
+namespace PromotionEngine.Tests.Service
 {
     public class EngineTest
     {
