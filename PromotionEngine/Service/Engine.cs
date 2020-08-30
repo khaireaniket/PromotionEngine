@@ -40,6 +40,29 @@ namespace PromotionEngine.Service
                                                                     .Any())
                                                         .ToList();
 
+
+            // Looping over all the filterd promotions
+            foreach (var promotion in promotionsWithPurchasedSku)
+            {
+                // If the iterated promotion has only one Sku item
+                if (promotion.PromotedSkus.Count == 1) 
+                {
+                    // If purchased Sku item quantity is less than that of promotional sku item quantity
+
+
+                    // If purchased Sku item quantity is same as that of promotional sku item quantity
+
+
+                    // If purchased Sku item quantity is more than that of promotional sku item quantity
+
+                }
+                // If the iterated promotion has more than one Sku item
+                else if (promotion.PromotedSkus.Count > 1) 
+                { 
+                    
+                }
+            }
+
             return cart;
         }
     }
