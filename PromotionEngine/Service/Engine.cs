@@ -79,8 +79,21 @@ namespace PromotionEngine.Service
                 }
                 // If the iterated promotion has more than one Sku item
                 else if (promotion.PromotedSkus.Count > 1) 
-                { 
-                    
+                {
+                    // List down all the combinations of purchased Sku items
+                    List<string> combinedSkuIds = new List<string>();
+
+                    // Looping over all the combinations
+                    foreach (string skuCombo in combinedSkuIds) 
+                    {
+                        // Looping over a list of promoted Sku items
+
+                        // If purchased Sku item quantity is less than that of promotional sku item quantity
+
+                        // If purchased Sku item quantity is same as that of promotional sku item quantity
+
+                        // If purchased Sku item quantity is more than that of promotional sku item quantity
+                    }
                 }
             }
 
