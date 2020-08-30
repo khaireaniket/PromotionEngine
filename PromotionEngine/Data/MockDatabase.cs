@@ -13,8 +13,8 @@ namespace PromotionEngine.Data
 
         public static void Seed()
         {
-            PromotionCollection = JsonConvert.DeserializeObject<List<PromotionCollection>>(File.ReadAllText($"{AppDomain.CurrentDomain.BaseDirectory}/MockData/MockPromotions.json"));
-            SkuCollection = JsonConvert.DeserializeObject<List<SkuCollection>>(File.ReadAllText($"{AppDomain.CurrentDomain.BaseDirectory}/MockData/MockSku.json"));
+            PromotionCollection = JsonConvert.DeserializeObject<List<PromotionCollection>>(File.ReadAllText($"{AppDomain.CurrentDomain.BaseDirectory}/Data/MockPromotions.json"));
+            SkuCollection = JsonConvert.DeserializeObject<List<SkuCollection>>(File.ReadAllText($"{AppDomain.CurrentDomain.BaseDirectory}/Data/MockSku.json"));
         }
     }
 }
