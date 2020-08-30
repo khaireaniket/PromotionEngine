@@ -23,9 +23,21 @@ namespace PromotionEngine.Service
             SkuCollection = MockDatabase.SkuCollection;
 
             // Dictionary will be used to hold SkuIds which are applied a promotion with fixed price
+            // E.g.
+            /*      Key                         Value
+                    -----------------------------------------
+                    PromotionId & SkuId[]       Final Price
+                    -----------------------------------------
+                    Promo123 - 'C', 'D'         30
+             */
             PromotionAppliedWithPriceForSkus = new Dictionary<(int, List<string>), decimal>();
         }
 
+        /// <summary>
+        /// Promotion Engine method which will execute for each cart purchase
+        /// </summary>
+        /// <param name="cart"></param>
+        /// <returns></returns>
         public Cart Run(Cart cart)
         {
             // Get SkuIds from cart
@@ -69,13 +81,11 @@ namespace PromotionEngine.Service
                     {
                         PromotionAppliedWithPriceForSkus.Add((promotion.PromotionId, new List<string> { purchasedSku.SkuId }), promotion.Offer);
                     }
+                    // Can be else condition but using else if for better code readability
                     // If purchased Sku item quantity is more than that of promotional sku item quantity calculate price with offer
                     else if (purchasedSku.Quantity > promotedSku.Quantity)
                     {
-                        var parts = purchasedSku.Quantity / promotedSku.Quantity;
-                        var reminder = purchasedSku.Quantity % promotedSku.Quantity;
-
-                        var price = (parts * promotion.Offer) + (reminder * skuRow.Price);
+                        var price = TotalPrice(skuRow.Price, purchasedSku.Quantity, promotedSku.Quantity, promotion.Offer);
                         PromotionAppliedWithPriceForSkus.Add((promotion.PromotionId, new List<string> { purchasedSku.SkuId }), price);
                     }
                 }
@@ -160,6 +170,27 @@ namespace PromotionEngine.Service
                 }
             }
 
+            // Filter out only non promoted Sku items
+            FilterNonPromotedSkus(cart, purchasedSkuIds, remainingSkuList);
+
+            foreach (var remainingSku in remainingSkuList)
+            {
+                var skuRow = SkuCollection.FirstOrDefault(a => a.SkuId == remainingSku.SkuId);
+                // Apply base price of the Sku item
+                PromotionAppliedWithPriceForSkus.Add((rnd.Next(-100, -1), new List<string> { remainingSku.SkuId }), remainingSku.Quantity * skuRow.Price);
+            }
+
+            return EvaluateCartPrice(cart);
+        }
+
+        /// <summary>
+        /// Method used for extracting Sku items which are not part of any promotion
+        /// </summary>
+        /// <param name="cart"></param>
+        /// <param name="purchasedSkuIds"></param>
+        /// <param name="remainingSkuList"></param>
+        private void FilterNonPromotedSkus(Cart cart, List<string> purchasedSkuIds, List<PurchasedSku> remainingSkuList)
+        {
             List<string> promotionAppliedSkus = new List<string>();
 
             // Dictionary key consisting of PromotionId and List of Sku items
@@ -180,18 +211,40 @@ namespace PromotionEngine.Service
                 // Add non promoted sku item in remaining sku item list
                 remainingSkuList.Add(new PurchasedSku { SkuId = purchasedSku.SkuId, Quantity = purchasedSku.Quantity });
             }
+        }
 
-            foreach (var remainingSku in remainingSkuList)
-            {
-                var skuRow = SkuCollection.FirstOrDefault(a => a.SkuId == remainingSku.SkuId);
-                // Apply base price of the Sku item
-                PromotionAppliedWithPriceForSkus.Add((rnd.Next(-100, -1), new List<string> { remainingSku.SkuId }), remainingSku.Quantity * skuRow.Price);
-            }
+        /// <summary>
+        /// Method used to calcuate effective price after applying promotion
+        /// </summary>
+        /// <param name="basePrice"></param>
+        /// <param name="purchasedQuantity"></param>
+        /// <param name="promoQuantity"></param>
+        /// <param name="promoPrice"></param>
+        /// <returns></returns>
+        private decimal TotalPrice(decimal basePrice, int purchasedQuantity, int promoQuantity, decimal promoPrice)
+        {
+            var parts = purchasedQuantity / promoQuantity;
+            var reminder = purchasedQuantity % promoQuantity;
 
+            return (parts * promoPrice) + (reminder * basePrice);
+        }
+
+        /// <summary>
+        /// Method used to grand total of cart
+        /// </summary>
+        /// <param name="cart"></param>
+        /// <returns></returns>
+        private Cart EvaluateCartPrice(Cart cart)
+        {
             cart.CartTotal = PromotionAppliedWithPriceForSkus.Sum(a => a.Value);
             return cart;
         }
 
+        /// <summary>
+        /// Method used to extract all the possible combinations from a given list of string
+        /// </summary>
+        /// <param name="inputList"></param>
+        /// <returns></returns>
         private List<string> GetAllCombinations(List<string> inputList)
         {
             List<string> outputList = new List<string>();
